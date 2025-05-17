@@ -1,0 +1,20 @@
+{
+    "listeners": {
+        "*:80": {
+            "pass": "applications/goweb"
+        }
+    },
+    "applications": {
+        "goweb": {
+            "type": "external",
+            "working_directory": "/mnt",
+            "executable": "/mnt/goweb",
+            "arguments": ["server"],
+            "processes": {
+                "max": 5,
+                "spare": 1,
+                "idle_timeout": 20
+            }
+        }
+    }
+}

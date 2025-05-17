@@ -1,0 +1,73 @@
+#!/bin/bash
+# nginx unit の設定
+function usage() {
+    echo -e "Usage: scripts/ngxunit COMMAND ...
+
+    COMMAND:
+        show 現在の設定を表示する
+        config 指定したファイルを設定する
+        restart 指定したアプリを再起動する
+
+    OPTIONS:
+        -h, --help: このヘルプを表示する
+
+    ex1) scripts/ngxunit show
+    ex2) scripts/ngxunit config ngxunit/sample.json
+    ex3) scripts/ngxunit restart app_name
+"
+    exit 2
+}
+
+opts=$(getopt -n $(basename $0) -a -o h -l help -- "$@")
+eval "set -- $opts"
+while [ $# -gt 0 ]; do
+  case $1 in
+    -h | --help) usage;;
+    --) shift; break;;
+  esac
+done
+
+UNITADDR=${UNITADDR:-app:7999}
+
+CMD=$1
+shift
+
+function cmd_show() {
+    curl http://${UNITADDR}/config
+    curl http://${UNITADDR}/status
+}
+
+function cmd_config() {
+    if [ -z "$CONF" ]; then
+        echo "specify config file"
+        usage
+    fi
+    if [ ! -f "$CONF" ]; then
+        echo "file not found: $CONF"
+        exit 1
+    fi
+    echo setting config from ${CONF}...
+    curl -X PUT http://${UNITADDR}/config --data-binary @${CONF}
+}
+
+function cmd_restart() {
+    if [ -z "$APPNAME" ]; then
+        APPNAME=goweb
+    fi
+    echo restarting ${APPNAME}...
+    curl -X GET http://${UNITADDR}/control/applications/${APPNAME}/restart      
+}
+
+case "$CMD" in
+    show)
+        cmd_show;;
+    config)
+        CONF=$1
+        shift
+        cmd_config;;
+    restart)
+        APPNAME=$1
+        shift
+        cmd_restart;;
+    *) echo "unknown command ${CMD}"; exit 1;;
+esac

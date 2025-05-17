@@ -1,0 +1,21 @@
+x-logging: &base-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "5"
+services:
+  app:
+    init: true
+    build:
+      context: ./dockerfiles/app
+      target: devserver
+      args:
+        - USER_UID=${COMPOSE_USER_UID:-1000}
+        - USER_GID=${COMPOSE_USER_GID:-1000}
+    volumes:
+      - output:/mnt
+    ports:
+      - ${COMPOSE_PUBLISH_NGINX_PORT:-2000}:80
+    logging: *base-logging
+volumes:
+  output:
