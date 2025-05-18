@@ -40,6 +40,13 @@ RUN apt-get update \
 # adjust GOPATH permission
 RUN chgrp -R users /go && chmod -R g+ws /go && setfacl -R -d -m g::rwx /go
 
+# go tools for vscode
+#   https://pkg.go.dev/github.com/go-delve/delve
+ARG GOTOOLS_DLV_VERSION=1.24
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go install github.com/go-delve/delve/cmd/dlv@v${GOTOOLS_DLV_VERSION} \
+ && go clean -cache
+
 # add normal user
 ARG USER_NAME=dev
 ARG USER_UID=1000
