@@ -1,0 +1,4 @@
+bin/
+.env
+__debug_bin*
+*.log
