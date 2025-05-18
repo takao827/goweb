@@ -1,17 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	unit "unit.nginx.org/go"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, World, %s!", r.URL.Path[1:])
-}
-
 func main() {
-	http.HandleFunc("/", handler)
-	unit.ListenAndServe(":8080", nil)
+	mux := http.NewServeMux()
+	files := http.FileServer(http.Dir(config.Static))
+	mux.Handle("/static/", http.StripPrefix("/static/", files))
+
+	mux.HandleFunc("/", index)
+
+	s := &http.Server{
+		Addr:    config.Address,
+		Handler: mux,
+	}
+
+	unit.ListenAndServe(s.Addr, s.Handler)
 }
