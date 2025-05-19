@@ -26,16 +26,16 @@ CMD ["bash"]
 
 # prerequisite/utility packages
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      acl \
-      make \
-      curl \
-      git \
-      less \
-      sudo \
-      jq \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  acl \
+  make \
+  curl \
+  git \
+  less \
+  sudo \
+  jq \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # adjust GOPATH permission
 RUN chgrp -R users /go && chmod -R g+ws /go && setfacl -R -d -m g::rwx /go
@@ -44,27 +44,27 @@ RUN chgrp -R users /go && chmod -R g+ws /go && setfacl -R -d -m g::rwx /go
 #   https://pkg.go.dev/github.com/go-delve/delve
 ARG GOTOOLS_DLV_VERSION=1.24
 RUN --mount=type=cache,target=/go/pkg/mod \
-    go install github.com/go-delve/delve/cmd/dlv@v${GOTOOLS_DLV_VERSION} \
- && go clean -cache
+  go install github.com/go-delve/delve/cmd/dlv@v${GOTOOLS_DLV_VERSION} \
+  && go clean -cache
 
 # add normal user
 ARG USER_NAME=dev
 ARG USER_UID=1000
 ARG USER_GID=1000
 RUN groupadd --gid $USER_GID $USER_NAME \
- && useradd --uid $USER_UID --gid $USER_GID -m $USER_NAME \
- && usermod -aG users $USER_NAME
+  && useradd --uid $USER_UID --gid $USER_GID -m $USER_NAME \
+  && usermod -aG users $USER_NAME
 
 # passwordless sudo
 RUN echo $USER_NAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USER_NAME \
- && chmod 0440 /etc/sudoers.d/$USER_NAME
+  && chmod 0440 /etc/sudoers.d/$USER_NAME
 
 # history
 # ref: https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/usr/local/history/.bash_history" \
-&& mkdir /usr/local/history \
-&& chown -R $USER_NAME:$USER_NAME /usr/local/history \
-&& echo "$SNIPPET" >> "/home/$USER_NAME/.bashrc"
+  && mkdir /usr/local/history \
+  && chown -R $USER_NAME:$USER_NAME /usr/local/history \
+  && echo "$SNIPPET" >> "/home/$USER_NAME/.bashrc"
 
 # locales
 ENV LANG=C.UTF-8
