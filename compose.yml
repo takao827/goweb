@@ -17,5 +17,20 @@ services:
     ports:
       - ${COMPOSE_PUBLISH_NGINX_PORT:-2000}:80
     logging: *base-logging
+  postgres:
+    init: true
+    image: postgres:16
+    command: [ "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+    volumes:
+      - ./dockerfiles/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./dockerfiles/postgres/initdb.d:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${COMPOSE_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${COMPOSE_PG_DB_NAME:-postgres}
+    ports:
+      - ${COMPOSE_PUBLISH_PG_PORT:-5432}:5432
+    logging: *base-logging
 volumes:
   output:
+  pgdata:
