@@ -40,6 +40,14 @@ RUN apt-get update \
 # adjust GOPATH permission
 RUN chgrp -R users /go && chmod -R g+ws /go && setfacl -R -d -m g::rwx /go
 
+# postgresql-client
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(cat /etc/os-release | grep VERSION_CODENAME | head -n 1 | cut -d = -f 2)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && curl -sSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/ACCC4CF8.asc > /dev/null \
+  && apt-get update \
+  && apt-get install -y locales postgresql-client-16 \
+  && rm -rf /var/lib/apt/lists/*
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
 # go tools for vscode
 #   https://pkg.go.dev/github.com/go-delve/delve
 ARG GOTOOLS_DLV_VERSION=1.24
@@ -81,3 +89,7 @@ USER $USER_NAME
 # to get right permission
 RUN mkdir -p /home/$USER_NAME/.vscode-server/extensions
 RUN mkdir -p /home/$USER_NAME/.cache/go-build
+
+# .env に書いた環境変数をシェルに取り込む処理を追加
+# 使用する前に開発環境で `go install ./cmd/exportenv` としてコマンドをインストールする必要がある
+RUN printf 'function expenv() {\n    if [ ! -f /go/bin/exportenv ]; then echo run go install ./cmd/exportenv; fi\n    eval $(exportenv -e)\n}' >> "/home/$USER_NAME/.bashrc"
