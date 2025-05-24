@@ -12,6 +12,7 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
 	mux.HandleFunc("/", index)
+	mux.HandleFunc("/learn/reflect", learn_reflect)
 
 	s := &http.Server{
 		Addr:    config.Address,
